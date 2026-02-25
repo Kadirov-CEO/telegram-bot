@@ -11,6 +11,9 @@ from telegram.ext import (
 TOKEN = os.getenv("TOKEN")
 GROUP_ID = -1003875236057
 
+if not TOKEN:
+    raise RuntimeError("TOKEN env topilmadi. Railway Variables ga TOKEN qo‘shing.")
+
 # Guruhdagi message_id → user_id map
 user_messages = {}
 
@@ -37,21 +40,39 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     # Guruhdagi message_id ni user bilan bog‘laymiz
     user_messages[sent_message.message_id] = user.id
 
+    # 1-xabar
     await update.message.reply_text("Yuborildi ✅")
+
+    # 2-xabar (alohida xabar)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Assalomu aleykum! Murojaatingiz qabul qilindi ✅\nSizga tez orada javob yo‘llayman."
+    )
 
 # Admin guruhda reply qilganda
 async def handle_group_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.reply_to_message:
-        replied_msg_id = update.message.reply_to_message.message_id
+    # Faqat o‘sha guruhdan kelgan reply bo‘lsin
+    if update.effective_chat and update.effective_chat.id != GROUP_ID:
+        return
 
-        if replied_msg_id in user_messages:
-            user_id = user_messages[replied_msg_id]
-            reply_text = update.message.text
+    if not update.message or not update.message.reply_to_message:
+        return
 
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=f"📬 Admin javobi:\n\n{reply_text}"
-            )
+    replied_msg_id = update.message.reply_to_message.message_id
+
+    if replied_msg_id not in user_messages:
+        return
+
+    user_id = user_messages[replied_msg_id]
+    reply_text = update.message.text or ""
+
+    if not reply_text.strip():
+        return
+
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=f"🏛Direktor javobi:\n\n{reply_text}"
+    )
 
 app = ApplicationBuilder().token(TOKEN).build()
 
