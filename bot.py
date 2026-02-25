@@ -40,11 +40,13 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     # Guruhdagi message_id ni user bilan bog‘laymiz
     user_messages[sent_message.message_id] = user.id
 
+    # 1-xabar
+    await update.message.reply_text("Assalomu aleykum! Murojaatingiz qabul qilindi ✅")
 
     # 2-xabar (alohida xabar)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="Assalomu aleykum! Murojaatingiz qabul qilindi ✅\nSizga tez orada javob yo‘llayman."
+        text="Sizga tez orada javob yo‘llayman."
     )
 
 # Admin guruhda reply qilganda
