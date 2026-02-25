@@ -40,8 +40,6 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     # Guruhdagi message_id ni user bilan bog‘laymiz
     user_messages[sent_message.message_id] = user.id
 
-    # 1-xabar
-    await update.message.reply_text("Yuborildi ✅")
 
     # 2-xabar (alohida xabar)
     await context.bot.send_message(
@@ -71,7 +69,7 @@ async def handle_group_reply(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=f"🏛Direktor javobi:\n\n{reply_text}"
+        text=f"\n\n{reply_text}"
     )
 
 app = ApplicationBuilder().token(TOKEN).build()
