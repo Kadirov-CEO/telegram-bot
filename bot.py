@@ -1,8 +1,12 @@
+import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-TOKEN = "8524400013:AAFpAMlbFIAHfT91GRTqAmrDJcYPbCMEEYQ"
+TOKEN = os.getenv("TOKEN")
 GROUP_ID = -1003875236057
+
+if not TOKEN:
+    raise RuntimeError("TOKEN topilmadi")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Murojaatingizni yozing:")
