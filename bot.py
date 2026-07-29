@@ -4,7 +4,7 @@ from telegram.ext import Application
 
 from config import Config
 from handlers import register_handlers
-from utils.logger import setup_logging
+from logger import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)

@@ -6,21 +6,18 @@
 
 ```
 bot/
-├── bot.py                 # kirish nuqtasi (webhook/polling)
-├── config.py              # environment variable'larni o'qish
-├── handlers/
-│   ├── __init__.py        # handlerlarni ro'yxatdan o'tkazish
-│   ├── start.py           # /start
-│   └── error.py           # global xatolik ushlagichi
-├── keyboards/
-│   └── main_menu.py       # inline klaviatura (Mini App tugmasi)
-├── utils/
-│   └── logger.py          # logging sozlamalari
+├── bot.py             # kirish nuqtasi (webhook/polling)
+├── config.py          # environment variable'larni o'qish
+├── handlers.py        # /start + global xatolik ushlagichi + ro'yxatdan o'tkazish
+├── keyboards.py        # inline klaviatura (Mini App tugmasi)
+├── logger.py          # logging sozlamalari
 ├── requirements.txt
 ├── runtime.txt
 ├── render.yaml
 └── .env.example
 ```
+
+Barcha fayllar bitta papkada, papkasiz (flat) — GitHub veb-saytidan "Add file → Upload files" orqali hammasini bir vaqtda tanlab yuklash mumkin, papka sudrashning hojati yo'q.
 
 ## Polling vs Webhook — nima uchun webhook tanlandi
 
