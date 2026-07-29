@@ -1,83 +1,47 @@
 import os
-from telegram import Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ContextTypes,
-    filters,
-)
+import logging
 
-TOKEN = os.getenv("TOKEN")
-GROUP_ID = -1003875236057
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from telegram.ext import Application, CommandHandler, ContextTypes
 
-if not TOKEN:
-    raise RuntimeError("TOKEN env topilmadi. Railway Variables ga TOKEN qo‘shing.")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
 
-# Guruhdagi message_id → user_id map
-user_messages = {}
+SITE_URL = "https://mudarris-akadmeiyasi.netlify.app/"
+
+
+def load_token():
+    token = os.environ.get("BOT_TOKEN")
+    if token:
+        return token.strip()
+    token_path = os.path.join(os.path.dirname(__file__), "token.txt")
+    with open(token_path, "r", encoding="utf-8") as f:
+        return f.readline().strip()
+
+
+BOT_TOKEN = load_token()
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Murojaatingizni yozing:")
-
-# User yozganda
-async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.message.from_user
-    text = update.message.text
-
-    message = (
-        f"📩 Yangi murojaat\n\n"
-        f"👤 Ism: {user.first_name}\n"
-        f"🆔 ID: {user.id}\n\n"
-        f"📝 Matn:\n{text}"
+    user = update.effective_user
+    keyboard = InlineKeyboardMarkup([[
+        InlineKeyboardButton("📚 Ilovani ochish", web_app=WebAppInfo(url=SITE_URL))
+    ]])
+    text = (
+        f"Assalomu alaykum, {user.first_name}! 👋\n\n"
+        "*Mudarris Akademiyasi*ga xush kelibsiz — arab tili grammatikasini "
+        "qiziqarli mashqlar orqali o'rganing.\n\n"
+        "Boshlash uchun quyidagi tugmani bosing:"
     )
+    await update.message.reply_text(text, reply_markup=keyboard, parse_mode="Markdown")
 
-    sent_message = await context.bot.send_message(
-        chat_id=GROUP_ID,
-        text=message
-    )
 
-    # Guruhdagi message_id ni user bilan bog‘laymiz
-    user_messages[sent_message.message_id] = user.id
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    logger.info("Bot ishga tushdi...")
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
-    # 1-xabar
-    await update.message.reply_text("Assalomu aleykum! Murojaatingiz qabul qilindi ✅")
 
-    # 2-xabar (alohida xabar)
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Sizga tez orada javob yo‘llayman."
-    )
-
-# Admin guruhda reply qilganda
-async def handle_group_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Faqat o‘sha guruhdan kelgan reply bo‘lsin
-    if update.effective_chat and update.effective_chat.id != GROUP_ID:
-        return
-
-    if not update.message or not update.message.reply_to_message:
-        return
-
-    replied_msg_id = update.message.reply_to_message.message_id
-
-    if replied_msg_id not in user_messages:
-        return
-
-    user_id = user_messages[replied_msg_id]
-    reply_text = update.message.text or ""
-
-    if not reply_text.strip():
-        return
-
-    await context.bot.send_message(
-        chat_id=user_id,
-        text=f"\n\n{reply_text}"
-    )
-
-app = ApplicationBuilder().token(TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND, handle_user_message))
-app.add_handler(MessageHandler(filters.ChatType.GROUPS & filters.TEXT, handle_group_reply))
-
-app.run_polling()
+if __name__ == "__main__":
+    main()
