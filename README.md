@@ -1,6 +1,6 @@
 # Mudarris Akademiyasi — Telegram Bot
 
-`/start` bosilganda foydalanuvchiga salomlashuv xabari va Mini App'ni ochuvchi tugma yuboradi. Production'da **webhook** rejimida, Render.com Web Service sifatida ishlaydi.
+`/start` bosilganda foydalanuvchiga salomlashuv xabari va Mini App'ni ochuvchi tugma yuboradi. Production'da **webhook** rejimida ishlaydi — Render.com yoki Railway.app, ikkalasida ham sozlanadi.
 
 ## Loyiha strukturasi
 
@@ -12,8 +12,10 @@ bot/
 ├── keyboards.py        # inline klaviatura (Mini App tugmasi)
 ├── logger.py          # logging sozlamalari
 ├── requirements.txt
-├── runtime.txt
-├── render.yaml
+├── runtime.txt        # Python versiyasi (Render uchun)
+├── render.yaml        # Render Blueprint sozlamalari
+├── railway.toml       # Railway build/start sozlamalari
+├── mise.toml          # Railway'ning Python o'rnatuvchisiga (mise) maxsus sozlama
 └── .env.example
 ```
 
@@ -23,7 +25,24 @@ Barcha fayllar bitta papkada, papkasiz (flat) — GitHub veb-saytidan "Add file 
 
 - **Polling** (`run_polling`) — botning o'zi Telegram serveridan doimiy so'rab turadi. Sodda, lekin doim tirik jarayon talab qiladi va HTTP port tinglamaydi. Render'ning **Web Service** turi esa `$PORT`da HTTP so'rovlarni kutishni talab qiladi — polling buni bajarmagani uchun Render uni "port band emas" deb hisoblab, xizmatni nosog'lom deb belgilaydi va qayta-qayta restart qilishi mumkin edi (aynan shu ilgari kelgan xatolarning sababi).
 - **Webhook** (`run_webhook`) — Telegram yangiliklarni to'g'ridan-to'g'ri bizning HTTP endpoint'imizga yuboradi, bot esa `$PORT`da tinglaydi. Bu Render Web Service modeliga to'liq mos keladi.
-- Bu loyihada: agar `WEBHOOK_URL` (yoki Render avtomatik beradigan `RENDER_EXTERNAL_URL`) mavjud bo'lsa — **webhook**, aks holda (masalan sizning kompyuteringizda lokal test qilsangiz) — **polling**'ga avtomatik o'tadi. Alohida kod yozish shart emas, `bot.py` shuni o'zi hal qiladi.
+- Bu loyihada: agar `WEBHOOK_URL` (yoki Railway'ning `RAILWAY_PUBLIC_DOMAIN`i, yoki Render'ning `RENDER_EXTERNAL_URL`i) mavjud bo'lsa — **webhook**, aks holda (masalan sizning kompyuteringizda lokal test qilsangiz) — **polling**'ga avtomatik o'tadi. Alohida kod yozish shart emas, `config.py` shuni o'zi aniqlaydi.
+
+## Railway.app'ga deploy qilish — bosqichma-bosqich
+
+1. Railway Dashboard > **New Project** > **Deploy from GitHub repo** > repo'ni tanlang.
+2. Agar `bot/` boshqa fayllar bilan bitta repoda bo'lsa, servis **Settings > Root Directory**ga `bot` deb yozing.
+3. `railway.toml` fayli tufayli **Build/Start Command'ni qo'lda kiritish shart emas** — Railway avtomatik `python3 bot.py`ni ishlatadi (bu qo'l bilan yozishda xato — masalan `phyton3` kabi imlo xatolarining oldini oladi).
+4. `mise.toml` fayli Railway'ning Python o'rnatuvchisidagi (`mise`) `"No GitHub artifact attestations found"` xatosini oldindan bartaraf etadi — qo'shimcha sozlash kerak emas.
+5. Servis > **Variables** bo'limiga qo'shing:
+   | Kalit | Qiymat |
+   |---|---|
+   | `BOT_TOKEN` | @BotFather'dan olingan haqiqiy token |
+   | `SITE_URL` | `https://mudarris-akadmeiyasi.netlify.app/` (ixtiyoriy) |
+   | `WEBHOOK_SECRET` | ixtiyoriy, qo'shimcha xavfsizlik |
+
+   `PORT` va `RAILWAY_PUBLIC_DOMAIN`ni **qo'shmang** — Railway buni avtomatik o'zi beradi.
+6. Servis > **Settings > Networking > Generate Domain** tugmasini bosing (bu `RAILWAY_PUBLIC_DOMAIN`ni faollashtiradi — webhook shu domenga ulanadi).
+7. Deploy tugagach loglarda `"Webhook rejimida ishga tushmoqda: https://....up.railway.app/<BOT_TOKEN>"` qatorini ko'rsangiz — bot ishga tushgan. Telegram'da `/start` yuboring.
 
 ## Render.com'ga deploy qilish — bosqichma-bosqich
 
